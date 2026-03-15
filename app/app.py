@@ -1,11 +1,15 @@
 from flask import Flask, request, render_template_string
 import joblib
-import os 
+import os
 import numpy as np
 
 app = Flask(__name__)
 
-model = joblib.load("../model/student_score_model.pkl")
+# Correct model path
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+model_path = os.path.join(BASE_DIR, "..", "model", "student_score_model.pkl")
+
+model = joblib.load(model_path)
 
 html_page = """
 <h2>Student Score Predictor</h2>
@@ -51,7 +55,7 @@ def predict():
 
     prediction = model.predict(features)[0]
 
-    return render_template_string(html_page, prediction=round(prediction,2))
+    return render_template_string(html_page, prediction=round(prediction, 2))
 
 
 if __name__ == "__main__":
