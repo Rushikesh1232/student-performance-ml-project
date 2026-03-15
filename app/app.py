@@ -1,0 +1,57 @@
+from flask import Flask, request, render_template_string
+import joblib
+import numpy as np
+
+app = Flask(__name__)
+
+model = joblib.load("../model/student_score_model.pkl")
+
+html_page = """
+<h2>Student Score Predictor</h2>
+
+<form method="post" action="/predict">
+Hours Studied:<br>
+<input type="number" name="hours_studied"><br>
+
+Attendance:<br>
+<input type="number" name="attendance"><br>
+
+Sleep Hours:<br>
+<input type="number" name="sleep_hours"><br>
+
+Previous Score:<br>
+<input type="number" name="previous_score"><br>
+
+Internet Usage:<br>
+<input type="number" name="internet_usage"><br><br>
+
+<input type="submit" value="Predict Score">
+</form>
+
+{% if prediction %}
+<h3>Predicted Score: {{prediction}}</h3>
+{% endif %}
+"""
+
+@app.route("/")
+def home():
+    return render_template_string(html_page)
+
+@app.route("/predict", methods=["POST"])
+def predict():
+
+    hours = float(request.form["hours_studied"])
+    attendance = float(request.form["attendance"])
+    sleep = float(request.form["sleep_hours"])
+    previous = float(request.form["previous_score"])
+    internet = float(request.form["internet_usage"])
+
+    features = np.array([[hours, attendance, sleep, previous, internet]])
+
+    prediction = model.predict(features)[0]
+
+    return render_template_string(html_page, prediction=round(prediction,2))
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
